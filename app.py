@@ -2157,48 +2157,53 @@ elif selected_page == "Profile":
     else:
         citizen = st.session_state.citizen
 
+        # Keep the official identity card visible; all detailed records are optional.
         display_citizen_card(citizen)
-        display_narrative_progress(citizen)
+        st.caption("PERSONNEL RECORD DIRECTORY // SELECT A SECTION TO EXPAND OR COLLAPSE")
 
-        col1, col2 = st.columns(2)
+        left, right = st.columns(2, gap="medium")
 
-        with col1:
-            st.subheader("PERSONAL INFORMATION")
-            st.write("Citizen Name:", citizen["name"])
-            st.write("Citizen ID:", citizen["citizen_id"])
-            st.write("Age:", citizen["age"])
-            st.write("Cohort:", citizen["cohort"])
-            st.write("Verification:", citizen["verification"])
+        with left:
+            with st.expander(":material/route:  NARRATIVE PROGRESS", expanded=False):
+                display_narrative_progress(citizen)
 
-        with col2:
-            st.subheader("CAREER RECORD")
-            st.write("Preferred Career:", citizen["preferred_career"])
-            st.write("Assigned Career:", citizen["assigned_career"])
-            st.write("Assignment Status:", citizen["assignment_status"])
+        with right:
+            with st.expander(":material/id_card:  PERSONAL INFORMATION", expanded=False):
+                st.write("**Citizen Name:**", citizen["name"])
+                st.write("**Citizen ID:**", citizen["citizen_id"])
+                st.write("**Age:**", citizen["age"])
+                st.write("**Cohort:**", citizen["cohort"])
+                st.write("**Verification:**", citizen["verification"])
+                st.write("**Registration Date:**", citizen["registration_date"])
 
-        st.divider()
-        display_questionnaire(citizen)
+        with left:
+            with st.expander(":material/work:  CAREER RECORD", expanded=False):
+                st.write("**Preferred Career:**", citizen["preferred_career"])
+                st.write("**Assigned Career:**", citizen["assigned_career"])
+                st.write("**Assignment Status:**", citizen["assignment_status"])
 
-        st.divider()
-        display_gauges(citizen)
+        with right:
+            with st.expander(":material/assignment:  EVALUATION RECORD", expanded=False):
+                display_questionnaire(citizen)
 
-        st.divider()
-        st.subheader("COMPLIANCE RECORD")
-        display_compliance(citizen)
+        with left:
+            with st.expander(":material/monitoring:  EVALUATION SUMMARY", expanded=False):
+                display_gauges(citizen)
 
-        st.divider()
-        st.subheader("APPEAL RECORD")
+        with right:
+            with st.expander(":material/verified_user:  COMPLIANCE RECORD", expanded=False):
+                display_compliance(citizen)
 
-        if citizen.get("appeal") is None:
-            st.info("No appeal has been submitted.")
-        else:
-            display_appeal_decision(citizen)
+        with left:
+            with st.expander(":material/gavel:  APPEAL RECORD", expanded=False):
+                if citizen.get("appeal") is None:
+                    st.info("No appeal has been submitted.")
+                else:
+                    display_appeal_decision(citizen)
 
-        st.divider()
-        st.write("**Registration Date:**", citizen["registration_date"])
-
-        st.divider()
-        display_documents(citizen)
+        with right:
+            with st.expander(":material/download:  OFFICIAL DOCUMENTS", expanded=False):
+                display_documents(citizen)
 
 # ============================================================
 # EVALUATION
