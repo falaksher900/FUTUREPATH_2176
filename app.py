@@ -2096,9 +2096,11 @@ with st.sidebar:
 
     render("""
 <div class="fp-side-footer">
-    <div>CCAA · SECURE CITIZEN PORTAL</div>
+    <div>FUTUREPATH 2176 · CENTRAL CAREER ALLOCATION AUTHORITY</div>
+    <div>AUTHORIZED CITIZEN ACCESS ONLY</div>
     <div class="fp-side-footer-quote">A STABLE SOCIETY IS BUILT ON ALIGNED FUTURES.</div>
-    <div>© 2176 CENTRAL AUTHORITY · FICTIONAL</div>
+    <div>FICTIONAL ACADEMIC DESIGN PROJECT · ALL ASSESSMENTS, DECISIONS AND POLICIES ARE SIMULATED.</div>
+    <div>USE FICTIONAL CITIZEN INFORMATION ONLY.</div>
 </div>
 """)
 
@@ -2365,36 +2367,30 @@ elif selected_page == "Evaluation":
 
             citizen = st.session_state.citizen
 
-            st.success("GOVERNMENT EVALUATION COMPLETE")
-            st.write("Citizen:", citizen["name"])
-            st.write("Citizen ID:", citizen["citizen_id"])
-            st.write("Preferred Career:", career)
-
-            st.error(
-                "PERMANENT ASSIGNMENT: "
-                + citizen["assigned_career"].upper()
-            )
-
-            if citizen["assigned_career"] != career:
-                st.warning(
-                    "CITIZEN PREFERENCE OVERRIDDEN. "
-                    "Government labor priorities take precedence."
-                )
-
-            st.divider()
-            display_gauges(citizen)
-
-            st.divider()
-            display_allocation_details(citizen)
-
-            st.divider()
-            st.info(
-                "NEXT REQUIRED ACTION: Visit Assignment "
-                "to complete Assignment Day."
-            )
-
-            st.divider()
-            display_documents(citizen)
+            st.success("GOVERNMENT EVALUATION COMPLETE // CITIZEN RECORD VERIFIED")
+            render(f"""
+<div class="gov-highlight">
+    <div class="gov-label">OFFICIAL ALLOCATION RESULT // {safe(citizen['citizen_id'])}</div>
+    <div class="gov-small">{safe(citizen['name'].upper())} · PREFERRED: {safe(citizen['preferred_career'])}</div>
+    <div class="gov-label" style="margin-top:17px;">YOUR PERMANENT ASSIGNMENT</div>
+    <div class="gov-value">{safe(citizen['assigned_career'].upper())}</div>
+    <div class="gov-small">A government-issued career designation has been recorded.</div>
+</div>
+""")
+            if citizen["assigned_career"] != citizen["preferred_career"]:
+                st.warning("CITIZEN PREFERENCE OVERRIDDEN // Government labor priorities take precedence.")
+            st.caption("Your detailed evaluation, scores, and documents are available in Profile.")
+            st.markdown("**SELECT YOUR NEXT ACTION**")
+            go_profile, go_dashboard, go_assignment = st.columns(3)
+            with go_profile:
+                st.button("VIEW PROFILE", icon=":material/id_card:", key="evaluation_go_profile",
+                          on_click=navigate_to, args=("Profile",), use_container_width=True)
+            with go_dashboard:
+                st.button("GO TO DASHBOARD", icon=":material/dashboard:", key="evaluation_go_dashboard",
+                          on_click=navigate_to, args=("Dashboard",), use_container_width=True)
+            with go_assignment:
+                st.button("PROCEED TO ASSIGNMENT", icon=":material/assignment:", key="evaluation_go_assignment",
+                          on_click=navigate_to, args=("Assignment",), use_container_width=True)
 
 # ============================================================
 # ASSIGNMENT — STEP 10
@@ -2409,21 +2405,24 @@ elif selected_page == "Assignment":
     else:
         citizen = st.session_state.citizen
 
-        st.success("ASSIGNMENT STATUS: CONFIRMED")
-
+        st.caption("NATIONAL ASSIGNMENT DAY // OFFICIAL CITIZEN RESPONSE")
         display_assignment_day(citizen)
 
-        st.divider()
-        display_gauges(citizen)
-
-        st.divider()
-        display_allocation_details(citizen)
-
-        st.divider()
-        display_appeal_status(citizen)
-
-        st.divider()
-        display_documents(citizen)
+        # Assignment Day is for a decision, not another evaluation report.
+        # The existing acceptance/refusal form and compliance result remain intact.
+        if citizen.get("assignment_decision") is not None:
+            st.markdown("**CONTINUE YOUR CITIZEN JOURNEY**")
+            go_profile, go_appeal = st.columns(2)
+            with go_profile:
+                st.button("VIEW CITIZEN PROFILE", icon=":material/id_card:",
+                          key="assignment_go_profile", on_click=navigate_to,
+                          args=("Profile",), use_container_width=True)
+            with go_appeal:
+                st.button("REQUEST RESTRICTED APPEAL", icon=":material/gavel:",
+                          key="assignment_go_appeal", on_click=navigate_to,
+                          args=("Appeal",), use_container_width=True)
+        else:
+            st.caption("Detailed allocation scores, appeal records, and downloadable documents are available on their respective pages.")
 
 # ============================================================
 # APPEAL
@@ -2610,25 +2609,5 @@ elif selected_page == "Resources":
         display_final_reveal()
 
 # ============================================================
-# FOOTER
-# ============================================================
-
-st.divider()
-
-st.caption(
-    "FUTUREPATH 2176 | "
-    "CENTRAL CAREER ALLOCATION AUTHORITY | "
-    "AUTHORIZED CITIZEN ACCESS ONLY"
-)
-
-st.caption(
-    "Fictional government portal created for "
-    "an academic speculative design project. "
-    "Use fictional citizen information only. "
-    "Career assessments, compliance decisions, "
-    "policies, documents, and appeals are simulated."
-)
-
-# ============================================================
-# END OF STEP 12 — STEPS 1–11 RETAINED
+# END OF FUTUREPATH 2176 — GLOBAL FOOTER MOVED TO SIDEBAR
 # ============================================================
