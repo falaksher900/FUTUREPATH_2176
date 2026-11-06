@@ -3,6 +3,7 @@ import streamlit as st
 import uuid
 import html
 import json
+import base64
 import re
 from datetime import datetime
 
@@ -197,7 +198,7 @@ hr {
     align-items: center;
     justify-content: center;
     color: var(--fp-text);
-    font-size: 25px;
+    font-size: 21px;
     font-weight: 800;
 }
 .gauge-label {
@@ -347,13 +348,13 @@ section[data-testid="stSidebar"] .stButton button { font-size:12px; }
 .fp-gauges { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; margin:12px 0; }
 .fp-gauge { background:var(--fp-panel); border:1px solid var(--fp-border); border-radius:8px; padding:18px 8px 13px; display:flex; flex-direction:column; align-items:center; gap:10px; text-align:center; }
 .fp-ring { width:102px; height:102px; border-radius:50%; display:flex; align-items:center; justify-content:center; }
-.fp-ring-inner { width:78px; height:78px; border-radius:50%; background:var(--fp-panel); display:flex; align-items:center; justify-content:center; color:var(--fp-text); font-size:24px; font-weight:800; }
+.fp-ring-inner { width:78px; height:78px; border-radius:50%; background:var(--fp-panel); display:flex; align-items:center; justify-content:center; color:var(--fp-text); font-size:20px; font-weight:800; }
 .fp-gauge-title { color:var(--fp-text); font-size:12px; font-weight:700; }
 .fp-bottom { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:12px; }
 .fp-status { color:var(--fp-accent); font-size:19px; font-weight:800; margin:8px 0; }
 .fp-banner { margin-top:12px; background:var(--fp-raised); border-left:4px solid var(--fp-accent); padding:12px 18px; color:var(--fp-text); font-size:12px; letter-spacing:.05em; }
 @media(max-width:950px) { .fp-dashboard {grid-template-columns:1fr;} }
-@media(max-width:600px) { .fp-gauges {gap:6px;} .fp-ring {width:79px;height:79px;} .fp-ring-inner {width:61px;height:61px;font-size:18px;} .fp-gauge {padding:12px 3px;} .fp-bottom {grid-template-columns:1fr;} .fp-name {font-size:19px;} }
+@media(max-width:600px) { .fp-gauges {gap:6px;} .fp-ring {width:79px;height:79px;} .fp-ring-inner {width:61px;height:61px;font-size:14px;} .fp-gauge {padding:12px 3px;} .fp-bottom {grid-template-columns:1fr;} .fp-name {font-size:19px;} }
 
 /* STEP 12+ : PROFESSIONAL ICON SIDEBAR */
 section[data-testid="stSidebar"] {
@@ -366,7 +367,8 @@ section[data-testid="stSidebar"] [data-testid="stSidebarUserContent"] {
 }
 .fp-side-brand { display:flex; gap:12px; align-items:center; padding:7px 3px 15px; }
 .fp-side-emblem { width:45px; height:45px; flex-shrink:0; }
-.fp-side-emblem svg { width:100%; height:100%; }
+.fp-side-emblem { width:54px; height:45px; color:var(--fp-accent); }
+.fp-side-emblem img { display:block; width:54px; height:45px; }
 .fp-side-logo { color:var(--fp-text); font-size:21px; letter-spacing:.09em; font-weight:850; line-height:1.1; }
 .fp-side-logo span { color:var(--fp-accent); }
 .fp-side-tag { font-size:8px; letter-spacing:.09em; color:var(--fp-muted); line-height:1.5; margin-top:5px; font-weight:700; }
@@ -485,7 +487,7 @@ def apply_visual_mode():
     st.html("<style>:root {" + variables + ";color-scheme:" + ("dark" if dark else "light") + ";}" + THEME_WIDGET_CSS + "</style>")
 
 
-THEME_WIDGET_CSS = '\n/* Shared widget styling; button descendants inherit their state foreground. */\n.stApp,[data-testid="stAppViewContainer"],[data-testid="stHeader"] {background:var(--fp-bg);color:var(--fp-text);}\n.stApp p,.stApp label,.stApp li,.stApp h1,.stApp h2,.stApp h3,.stApp h4 {color:var(--fp-text);}\n.stApp a {color:var(--fp-accent);}\n[data-testid="stCaptionContainer"],input::placeholder,textarea::placeholder {color:var(--fp-muted)!important;opacity:1;}\n[data-testid="stForm"],[data-testid="stExpander"],details,details summary {background:var(--fp-panel)!important;color:var(--fp-text)!important;border-color:var(--fp-border)!important;}\n[data-baseweb="input"],[data-baseweb="base-input"],[data-baseweb="textarea"],[data-baseweb="select"]>div,input,textarea {background:var(--fp-panel)!important;color:var(--fp-text)!important;border-color:var(--fp-border)!important;caret-color:var(--fp-accent);}\n[data-baseweb="select"] span,[data-baseweb="select"] input {color:var(--fp-text)!important;}\n[data-baseweb="popover"],[data-baseweb="menu"],[role="listbox"],[role="option"],[role="tooltip"] {background:var(--fp-panel)!important;color:var(--fp-text)!important;}\n[role="option"]:hover,[role="option"][aria-selected="true"] {background:var(--fp-raised)!important;}\n.stButton button,.stFormSubmitButton button,.stDownloadButton button,.stLinkButton a {background:var(--fp-accent)!important;color:var(--fp-button_text)!important;border:1px solid var(--fp-accent)!important;transition:background .15s,border-color .15s;}\n.stButton button[kind="secondary"],.stFormSubmitButton button[kind="secondary"] {background:var(--fp-raised)!important;color:var(--fp-text)!important;border-color:var(--fp-border)!important;}\n.stApp button p,.stApp button span,.stApp button svg,.stApp button [data-testid="stMarkdownContainer"],.stLinkButton a p {color:inherit!important;}\n.stButton button:enabled:hover,.stFormSubmitButton button:enabled:hover,.stDownloadButton button:enabled:hover {background:var(--fp-hover)!important;color:var(--fp-button_text)!important;border-color:var(--fp-hover)!important;}\n.stButton button[kind="secondary"]:enabled:hover,.stFormSubmitButton button[kind="secondary"]:enabled:hover {background:var(--fp-panel)!important;color:var(--fp-accent)!important;border-color:var(--fp-accent)!important;}\n.stApp .stButton button:disabled,.stApp .stFormSubmitButton button:disabled,.stApp .stDownloadButton button:disabled {background:var(--fp-raised)!important;color:var(--fp-muted)!important;border-color:var(--fp-border)!important;opacity:1;cursor:not-allowed;}\ninput:disabled,textarea:disabled {color:var(--fp-muted)!important;-webkit-text-fill-color:var(--fp-muted)!important;}\n.stApp button:focus-visible,.stApp input:focus-visible,.stApp textarea:focus-visible {outline:3px solid var(--fp-accent)!important;outline-offset:3px;}\n[data-testid="stTabs"] [role="tablist"] {border-color:var(--fp-border);}\n[data-testid="stTabs"] [role="tab"] {background:transparent;color:var(--fp-muted);}\n[data-testid="stTabs"] [role="tab"][aria-selected="true"] {color:var(--fp-accent);}\n[data-baseweb="tab-highlight"],[data-testid="stProgressBar"] [role="progressbar"]>div {background:var(--fp-accent)!important;}\n[data-testid="stAlert"] {background:var(--fp-raised)!important;color:var(--fp-text)!important;border:1px solid var(--fp-border);border-left:4px solid var(--fp-accent);}\n[data-testid="stAlert"] p,[data-testid="stAlert"] svg {color:inherit!important;}\n[data-testid="stCode"],pre,code {background:var(--fp-raised)!important;color:var(--fp-text)!important;}\ntable,th,td,[data-testid="stMetricValue"],[data-testid="stMetricLabel"] {color:var(--fp-text)!important;border-color:var(--fp-border)!important;}\n[data-testid="stCheckbox"] label,[data-testid="stRadio"] label {color:var(--fp-text)!important;}\n.st-key-fp_theme_toggle {display:flex;justify-content:flex-end;}\n.st-key-fp_theme_toggle button {width:42px!important;height:42px;min-height:42px;border-radius:50%!important;padding:8px!important;background:var(--fp-raised)!important;color:var(--fp-accent)!important;border-color:var(--fp-border)!important;}\n.fp-main-brand {display:flex;align-items:center;gap:18px;margin:8px 0 12px;}\n.fp-main-brand svg {width:66px;height:66px;flex-shrink:0;color:var(--fp-accent);}\n.fp-main-brand h1 {margin:0;padding:0;font-size:clamp(26px,4vw,44px);letter-spacing:.08em;line-height:1.15;}\n.fp-main-brand .fp-year {color:var(--fp-accent);font-size:11px;letter-spacing:.3em;margin-top:5px;}\n@media(prefers-reduced-motion:reduce) {* {transition:none!important;}}\n'
+THEME_WIDGET_CSS = '\n/* Shared widget styling; button descendants inherit their state foreground. */\n.stApp,[data-testid="stAppViewContainer"],[data-testid="stHeader"] {background:var(--fp-bg);color:var(--fp-text);}\n.stApp p,.stApp label,.stApp li,.stApp h1,.stApp h2,.stApp h3,.stApp h4 {color:var(--fp-text);}\n.stApp a {color:var(--fp-accent);}\n[data-testid="stCaptionContainer"],input::placeholder,textarea::placeholder {color:var(--fp-muted)!important;opacity:1;}\n[data-testid="stForm"],[data-testid="stExpander"],details,details summary {background:var(--fp-panel)!important;color:var(--fp-text)!important;border-color:var(--fp-border)!important;}\n[data-baseweb="input"],[data-baseweb="base-input"],[data-baseweb="textarea"],[data-baseweb="select"]>div,input,textarea {background:var(--fp-panel)!important;color:var(--fp-text)!important;border-color:var(--fp-border)!important;caret-color:var(--fp-accent);}\n[data-baseweb="select"] span,[data-baseweb="select"] input {color:var(--fp-text)!important;}\n[data-baseweb="popover"],[data-baseweb="menu"],[role="listbox"],[role="option"],[role="tooltip"] {background:var(--fp-panel)!important;color:var(--fp-text)!important;}\n[role="option"]:hover,[role="option"][aria-selected="true"] {background:var(--fp-raised)!important;}\n.stButton button,.stFormSubmitButton button,.stDownloadButton button,.stLinkButton a {background:var(--fp-accent)!important;color:var(--fp-button_text)!important;border:1px solid var(--fp-accent)!important;transition:background .15s,border-color .15s;}\n.stButton button[kind="secondary"],.stFormSubmitButton button[kind="secondary"] {background:var(--fp-raised)!important;color:var(--fp-text)!important;border-color:var(--fp-border)!important;}\n.stApp button p,.stApp button span,.stApp button svg,.stApp button [data-testid="stMarkdownContainer"],.stLinkButton a p {color:inherit!important;}\n.stButton button:enabled:hover,.stFormSubmitButton button:enabled:hover,.stDownloadButton button:enabled:hover {background:var(--fp-hover)!important;color:var(--fp-button_text)!important;border-color:var(--fp-hover)!important;}\n.stButton button[kind="secondary"]:enabled:hover,.stFormSubmitButton button[kind="secondary"]:enabled:hover {background:var(--fp-panel)!important;color:var(--fp-accent)!important;border-color:var(--fp-accent)!important;}\n.stApp .stButton button:disabled,.stApp .stFormSubmitButton button:disabled,.stApp .stDownloadButton button:disabled {background:var(--fp-raised)!important;color:var(--fp-muted)!important;border-color:var(--fp-border)!important;opacity:1;cursor:not-allowed;}\ninput:disabled,textarea:disabled {color:var(--fp-muted)!important;-webkit-text-fill-color:var(--fp-muted)!important;}\n.stApp button:focus-visible,.stApp input:focus-visible,.stApp textarea:focus-visible {outline:3px solid var(--fp-accent)!important;outline-offset:3px;}\n[data-testid="stTabs"] [role="tablist"] {border-color:var(--fp-border);}\n[data-testid="stTabs"] [role="tab"] {background:transparent;color:var(--fp-muted);}\n[data-testid="stTabs"] [role="tab"][aria-selected="true"] {color:var(--fp-accent);}\n[data-baseweb="tab-highlight"],[data-testid="stProgressBar"] [role="progressbar"]>div {background:var(--fp-accent)!important;}\n[data-testid="stAlert"] {background:var(--fp-raised)!important;color:var(--fp-text)!important;border:1px solid var(--fp-border);border-left:4px solid var(--fp-accent);}\n[data-testid="stAlert"] p,[data-testid="stAlert"] svg {color:inherit!important;}\n[data-testid="stCode"],pre,code {background:var(--fp-raised)!important;color:var(--fp-text)!important;}\ntable,th,td,[data-testid="stMetricValue"],[data-testid="stMetricLabel"] {color:var(--fp-text)!important;border-color:var(--fp-border)!important;}\n[data-testid="stCheckbox"] label,[data-testid="stRadio"] label {color:var(--fp-text)!important;}\n.st-key-fp_theme_toggle {display:flex;justify-content:flex-end;}\n.st-key-fp_theme_toggle button {width:42px!important;height:42px;min-height:42px;border-radius:50%!important;padding:8px!important;background:var(--fp-raised)!important;color:var(--fp-accent)!important;border-color:var(--fp-border)!important;}\n.fp-main-brand {display:flex;align-items:center;gap:18px;margin:8px 0 12px;}\n.fp-main-brand .fp-emblem-image {width:66px;height:66px;flex-shrink:0;color:var(--fp-accent);}\n.fp-main-brand h1 {margin:0;padding:0;font-size:clamp(26px,4vw,44px);letter-spacing:.08em;line-height:1.15;}\n.fp-main-brand .fp-year {color:var(--fp-accent);font-size:11px;letter-spacing:.3em;margin-top:5px;}\n@media(prefers-reduced-motion:reduce) {* {transition:none!important;}}\n'
 
 apply_visual_mode()
 
@@ -883,71 +885,66 @@ def allocate_career(responses):
 # ============================================================
 
 def calculate_indices(responses, allocation):
+    """Deterministic fictional CCAA indices, using every assessment answer.
+
+    Ratings are narrative policy coefficients, not validated aptitude measures.
+    Small option-level policy contributions distinguish otherwise equal matches.
+    Identity names never influence the assessment. No random scores are used.
+    """
+    domains = [
+        ("skill", skill_options), ("secondary_skill", skill_options),
+        ("academic_subject", academic_subjects),
+        ("work_environment", work_environments),
+        ("work_priority", work_priorities), ("teamwork", teamwork_options),
+        ("compliance", compliance_options), ("individual_choice", choice_options),
+    ]
+    policy = {}
+    for key, options in domains:
+        position = options.index(responses[key])
+        policy[key] = 100 * position / max(1, len(options)-1)
+    # The fictional Authority values conformity, structured teamwork and security.
+    policy["compliance"] = [100, 72, 36, 8][compliance_options.index(responses["compliance"])]
+    policy["teamwork"] = [24, 66, 100, 86][teamwork_options.index(responses["teamwork"])]
+    policy["work_priority"] = [18, 91, 73, 61, 57, 12, 100, 79][work_priorities.index(responses["work_priority"])]
     b = allocation["score_breakdown"]
-
-    matching = (
-        b["Primary Skill"]
-        + b["Secondary Skill"]
-        + b["Academic Strength"]
-        + b["Work Environment"]
-        + b["Workplace Priority"]
-    )
-
-    productivity = round(matching / 105 * 100)
-
-    compliance_points = {
-        "Always follow official instructions": 35,
-        "Usually follow instructions": 25,
-        "Question instructions when necessary": 12,
-        "Prefer making independent decisions": 0
+    match = 100 * sum(b[k] for k in ["Primary Skill", "Secondary Skill", "Academic Strength", "Work Environment", "Workplace Priority"]) / 105
+    preferred = responses.get("preferred_career", allocation["assigned_career"])
+    preferred_profile = career_profiles.get(preferred)
+    preference_fit = 50.0
+    if preferred_profile:
+        preference_fit = sum([
+            35 * (responses["skill"] in preferred_profile["skills"]),
+            30 * (responses["secondary_skill"] in preferred_profile["skills"]),
+            20 * (responses["academic_subject"] in preferred_profile["subjects"]),
+            10 * (responses["work_environment"] in preferred_profile["environments"]),
+            10 * (responses["work_priority"] in preferred_profile["priorities"]),
+        ]) / 105 * 100
+    policy.update(match=match, preference_fit=preference_fit)
+    # All positive weights: every answer contributes to all three indices.
+    weights = {
+        "productivity_fit": [5, 4, 3, 2, 2, 2, 2, 2, 12, 6],
+        "social_alignment": [2, 2, 2, 2, 3, 5, 12, 10, 3, 4],
+        "stability_index": [2.13, 2.37, 3.19, 4.23, 7.11, 8.31, 8.17, 5.29, 5.43, 6.07],
     }
+    # Explicit preference policy keeps different occupations distinguishable even
+    # when the catalog profiles have identical skills and labor demand.
+    occupation_policy = 2 * career_options.index(preferred) / max(1, len(career_options)-1)
+    age_policy = (float(responses.get("age", 18))-18) * 0.02
+    values = list(policy.values())
+    return {key: round(5 + 0.88 * sum(v*w for v,w in zip(values, ws)) / sum(ws)
+                       + occupation_policy + age_policy, 2)
+            for key, ws in weights.items()}
 
-    choice_points = {
-        "Personal ambition should come first": 0,
-        "Personal goals and societal needs should be balanced": 15,
-        "Societal needs should come first": 28,
-        "Government decisions should determine career placement": 35
-    }
 
-    teamwork_points = {
-        "Prefer working independently": 8,
-        "Prefer working in small teams": 18,
-        "Prefer large structured teams": 25,
-        "Comfortable with any arrangement": 22
-    }
+def render_evaluation_gauges(indices):
+    gauges = ""
+    for key, label in [("productivity_fit", "Productivity Fit"),
+                       ("social_alignment", "Social Alignment"),
+                       ("stability_index", "Stability Index")]:
+        value = indices[key]
+        gauges += f'<div class="fp-gauge"><div class="fp-ring" style="background:conic-gradient(var(--fp-accent) {value}%,var(--fp-border) {value}%);"><div class="fp-ring-inner">{value:.2f}%</div></div><div class="fp-gauge-title">{label}</div></div>'
+    render(f'<div class="fp-gauges">{gauges}</div>')
 
-    priority_points = {
-        "Creative Freedom": 6,
-        "Financial Stability": 20,
-        "Helping Others": 15,
-        "Leadership and Influence": 12,
-        "Scientific Discovery": 12,
-        "Independent Decision-Making": 5,
-        "Job Security": 20,
-        "Technological Innovation": 14
-    }
-
-    compliance = compliance_points[responses["compliance"]]
-
-    social = (
-        30
-        + compliance
-        + choice_points[responses["individual_choice"]]
-    )
-
-    stability = (
-        20
-        + teamwork_points[responses["teamwork"]]
-        + priority_points[responses["work_priority"]]
-        + b["Government Labor Demand"]
-        + round(compliance * 0.5)
-    )
-
-    return {
-        "productivity_fit": max(0, min(100, productivity)),
-        "social_alignment": max(0, min(100, social)),
-        "stability_index": max(0, min(100, stability))
-    }
 
 # ============================================================
 # STEP 7: APPEAL SYSTEM
@@ -1232,7 +1229,7 @@ def display_gauges(citizen):
              {color} {value}%,
              #435565 {value}%
          );">
-        <div class="gauge-inner">{value}%</div>
+        <div class="gauge-inner">{value:.2f}%</div>
     </div>
     <div class="gauge-label">{label}</div>
     <div class="gauge-description">{description}</div>
@@ -2040,6 +2037,7 @@ def create_aurora_demo_record():
         "compliance": "Question instructions when necessary",
         "individual_choice": "Personal ambition should come first",
     }
+    responses.update(preferred_career="Artist", age=18)
     allocation = allocate_career(responses)
     indices = calculate_indices(responses, allocation)
     return {
@@ -2158,7 +2156,7 @@ def display_compact_dashboard(citizen):
         gauges += f"""
 <div class="fp-gauge">
     <div class="fp-ring" style="background:conic-gradient({color} {value}%,#435565 {value}%);">
-        <div class="fp-ring-inner">{value}%</div>
+        <div class="fp-ring-inner">{value:.2f}%</div>
     </div>
     <div class="fp-gauge-title">{safe(label)}</div>
 </div>"""
@@ -2201,7 +2199,15 @@ if "navigation" not in st.session_state or st.session_state.navigation not in [i
     st.session_state.navigation = "Dashboard"
 
 
-LOGO_SVG = '<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><g fill="currentColor"><path d="M27 5H92L80 23H15Z"/><path d="M17 31H48L36 49H5Z"/><path d="M52 40H72L34 96H14Z"/><path d="M96 8H118L59 96H37Z"/></g></svg>'
+def emblem_image():
+    """Self-contained emblem with an explicit foreground for each theme."""
+    color = THEME[st.session_state.visual_mode]["accent"]
+    svg = EMBLEM_SOURCE.replace("currentColor", color)
+    encoded = base64.b64encode(svg.encode("utf-8")).decode("ascii")
+    return f'<img class="fp-emblem-image" src="data:image/svg+xml;base64,{encoded}" alt="FUTUREPATH emblem" width="54" height="45" style="display:block;object-fit:contain;flex-shrink:0;" />'
+
+
+EMBLEM_SOURCE = '<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg" width="120" height="100"><g fill="currentColor"><path d="M27 5H92L80 23H15Z"/><path d="M17 31H48L36 49H5Z"/><path d="M52 40H72L34 96H14Z"/><path d="M96 8H118L59 96H37Z"/></g></svg>'
 
 
 def navigate_to(destination):
@@ -2216,7 +2222,7 @@ with st.sidebar:
     render(f"""
 <div class="fp-side-brand">
     <div class="fp-side-emblem" aria-hidden="true">
-{LOGO_SVG}
+{emblem_image()}
     </div>
     <div>
         <div class="fp-side-logo">FUTURE<span>PATH</span></div>
@@ -2319,7 +2325,7 @@ render(
     '</div>'
 )
 
-render(f'<div class="fp-main-brand">{LOGO_SVG}<div><h1>FUTUREPATH</h1><div class="fp-year">2176 / ASSIGNED FUTURES</div></div></div>')
+render(f'<div class="fp-main-brand">{emblem_image()}<div><h1>FUTUREPATH</h1><div class="fp-year">2176 / ASSIGNED FUTURES</div></div></div>')
 st.caption(
     "OFFICIAL CITIZEN PORTAL | ASSIGNED FUTURES PROGRAM"
 )
@@ -2430,7 +2436,7 @@ elif selected_page == "Evaluation":
             "current record in this session."
         )
 
-    with st.form("citizen_evaluation_form"):
+    with st.container(border=True):
         identity, preferences = st.columns(2, gap="medium")
         with identity:
             st.markdown("**01 / CITIZEN IDENTIFICATION**")
@@ -2462,7 +2468,21 @@ elif selected_page == "Evaluation":
             individual_choice = st.selectbox("Views on career allocation", choice_options)
 
         st.caption("OFFICIAL NOTICE · All submitted answers enter the simulated CCAA allocation system.")
-        submitted = st.form_submit_button("SUBMIT FOR GOVERNMENT EVALUATION", type="primary", use_container_width=True)
+        submitted = st.button("SUBMIT FOR GOVERNMENT EVALUATION", key="submit_evaluation", type="primary", use_container_width=True)
+
+    # Widgets rerun immediately; the official citizen record changes on submit.
+    responses = {
+        "skill": skill, "secondary_skill": secondary_skill,
+        "academic_subject": academic_subject, "work_environment": work_environment,
+        "work_priority": work_priority, "teamwork": teamwork,
+        "compliance": compliance, "individual_choice": individual_choice,
+        "preferred_career": career, "age": int(age),
+    }
+    preview_allocation = allocate_career(responses)
+    preview_indices = calculate_indices(responses, preview_allocation)
+    st.markdown("**LIVE EVALUATION INDICES**")
+    st.caption("Updates with each assessment selection and age change. Name identifies the record. These are fictional CCAA simulation scores. Submit to save this evaluation.")
+    render_evaluation_gauges(preview_indices)
 
     if submitted:
         if not name.strip():
@@ -2476,19 +2496,8 @@ elif selected_page == "Evaluation":
             )
 
         else:
-            responses = {
-                "skill": skill,
-                "secondary_skill": secondary_skill,
-                "academic_subject": academic_subject,
-                "work_environment": work_environment,
-                "work_priority": work_priority,
-                "teamwork": teamwork,
-                "compliance": compliance,
-                "individual_choice": individual_choice
-            }
-
-            allocation = allocate_career(responses)
-            indices = calculate_indices(responses, allocation)
+            allocation = preview_allocation
+            indices = preview_indices
 
             st.session_state.citizen = {
                 "name": name.strip(),
@@ -2760,3 +2769,4 @@ elif selected_page == "Resources":
 # ============================================================
 # END OF FUTUREPATH 2176 — GLOBAL FOOTER MOVED TO SIDEBAR
 # ============================================================
+
