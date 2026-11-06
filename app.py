@@ -458,6 +458,45 @@ def timestamp():
     return datetime.now().strftime("%Y-%m-%d %H:%M")
 
 
+# GLOBAL VISUAL MODE — persistent across navigation and evaluations
+if "visual_mode" not in st.session_state:
+    st.session_state.visual_mode = "Dark"
+
+THEME = {
+    "Dark": {"bg": "#0e1b2b", "panel": "#17283a", "raised": "#24374a", "text": "#e8e9ec", "muted": "#a8b8c9", "border": "#435565", "accent": "#b095f2", "button_text": "#0e1b2b"},
+    "Light": {"bg": "#f3f5fa", "panel": "#ffffff", "raised": "#e8edf6", "text": "#1c2b40", "muted": "#4b5d73", "border": "#c5cfdf", "accent": "#7153b5", "button_text": "#ffffff"},
+}
+
+def apply_visual_mode():
+    t = THEME[st.session_state.visual_mode]
+    st.html(f"""<style>
+    .stApp, [data-testid='stAppViewContainer'] {{ background: {t['bg']} !important; color: {t['text']} !important; }}
+    section[data-testid='stSidebar'], [data-testid='stSidebarContent'] {{ background: {t['panel']} !important; }}
+    section[data-testid='stSidebar'] * {{ color: {t['text']} !important; }}
+    .stApp h1,.stApp h2,.stApp h3,.stApp p,.stApp label,.stApp [data-testid='stMarkdownContainer'] {{ color: {t['text']}; }}
+    .gov-panel,.gov-highlight,[data-testid='stExpander'] {{ background: {t['panel']} !important; border-color: {t['border']} !important; color: {t['text']} !important; }}
+    .gov-highlight {{ background: {t['raised']} !important; border-left-color: {t['accent']} !important; }}
+    .gov-value,.fp-side-logo,.stApp h1,.stApp h2,.stApp h3 {{ color: {t['text']} !important; }}
+    .gov-label,.gov-small,.stCaption,.stApp [data-testid='stCaptionContainer'] {{ color: {t['muted']} !important; }}
+    .stTextInput input,.stNumberInput input,.stTextArea textarea,
+    [data-baseweb='select'] > div,[data-baseweb='input'] > div,
+    [data-baseweb='popover'] [role='listbox'],[data-baseweb='menu'],[role='listbox'] {{
+      background: {t['panel']} !important; color: {t['text']} !important; border-color: {t['border']} !important;
+    }}
+    [data-baseweb='select'] *,[data-baseweb='menu'] *,[role='option'] {{ color: {t['text']} !important; }}
+    .stButton button[kind='primary'],.stFormSubmitButton button[kind='primary'],.stDownloadButton button {{
+      background: {t['accent']} !important; color: {t['button_text']} !important; border-color: {t['accent']} !important;
+    }}
+    .stButton button[kind='secondary'],.stFormSubmitButton button[kind='secondary'] {{
+      background: {t['raised']} !important; color: {t['text']} !important; border: 1px solid {t['border']} !important;
+    }}
+    [data-testid='stForm'],[data-testid='stVerticalBlockBorderWrapper'] {{ border-color: {t['border']} !important; }}
+    [data-testid='stRadio'] label,[data-testid='stCheckbox'] label {{ color: {t['text']} !important; }}
+    .fp-side-footer,.fp-side-section,.fp-side-person-id {{ color: {t['muted']} !important; border-color: {t['border']} !important; }}
+    </style>""")
+
+apply_visual_mode()
+
 # ============================================================
 # EVALUATION OPTIONS
 # ============================================================
@@ -624,6 +663,173 @@ career_profiles = {
     }
 }
 
+
+# EXTENDED CAREER CATALOG — 120 unique assignments across 12 sectors.
+CAREER_SECTORS = {'AI & Digital Systems': ['AI Ethics Auditor',
+                          'Neural Interface Designer',
+                          'Machine Cognition Trainer',
+                          'Synthetic Intelligence Mediator',
+                          'Quantum Network Architect',
+                          'Autonomous Systems Engineer',
+                          'Digital Identity Custodian',
+                          'Algorithmic Fairness Inspector',
+                          'Predictive Systems Analyst',
+                          'Human-Machine Integration Specialist'],
+ 'Creative & Cultural': ['Synthetic Habitat Architect',
+                         'Immersive Experience Designer',
+                         'Digital Heritage Conservator',
+                         'Virtual Fashion Designer',
+                         'Cultural Memory Curator',
+                         'Holographic Storyteller',
+                         'Sensory Environment Designer',
+                         'Augmented Reality Artist',
+                         'Public Narrative Architect',
+                         'Synthetic Media Restorer'],
+ 'Climate & Ecology': ['Climate Restoration Engineer',
+                       'Ocean Recovery Coordinator',
+                       'Urban Rewilding Designer',
+                       'Atmospheric Repair Technician',
+                       'Biodiversity Systems Analyst',
+                       'Carbon Capture Planner',
+                       'Eco-Habitat Steward',
+                       'Renewable Grid Strategist',
+                       'Water Security Engineer',
+                       'Synthetic Ecosystem Curator'],
+ 'Health & Biotechnology': ['Genomic Wellness Counselor',
+                            'Neuroprosthetics Technician',
+                            'Regenerative Tissue Specialist',
+                            'Pandemic Response Modeler',
+                            'Precision Medicine Analyst',
+                            'Biofabrication Engineer',
+                            'Community Health Navigator',
+                            'Longevity Ethics Officer',
+                            'Robotic Surgery Coordinator',
+                            'Adaptive Care Designer'],
+ 'Civic Administration': ['Algorithmic Compliance Officer',
+                          'Predictive Social Stability Officer',
+                          'Civic Emotion Regulator',
+                          'Citizen Placement Examiner',
+                          'Population Resource Planner',
+                          'Government Communications Officer',
+                          'Public Trust Auditor',
+                          'Workforce Planning Analyst',
+                          'Behavioral Pattern Analyst',
+                          'Civic Records Registrar'],
+ 'Infrastructure & Engineering': ['Orbital Infrastructure Technician',
+                                  'Smart City Systems Engineer',
+                                  'Infrastructure Systems Engineer',
+                                  'Adaptive Transit Designer',
+                                  'Autonomous Construction Supervisor',
+                                  'Resilient Materials Engineer',
+                                  'Subsurface Habitat Technician',
+                                  'Energy Storage Architect',
+                                  'Disaster Shelter Planner',
+                                  'Industrial Design Technician'],
+ 'Space & Exploration': ['Lunar Habitat Coordinator',
+                         'Asteroid Resource Analyst',
+                         'Orbital Traffic Controller',
+                         'Space Agriculture Engineer',
+                         'Extraterrestrial Materials Scientist',
+                         'Deep Space Communications Officer',
+                         'Microgravity Health Specialist',
+                         'Planetary Mapping Analyst',
+                         'Satellite Repair Specialist',
+                         'Interplanetary Logistics Planner'],
+ 'Education & Research': ['Learning Systems Architect',
+                          'Research Systems Analyst',
+                          'Cognitive Development Mentor',
+                          'Knowledge Verification Specialist',
+                          'Scientific Discovery Coordinator',
+                          'Adaptive Curriculum Designer',
+                          'Virtual Laboratory Instructor',
+                          'Citizen Skills Assessor',
+                          'Historical Simulation Researcher',
+                          'Ethical Technology Educator'],
+ 'Business & Logistics': ['Automated Workforce Supervisor',
+                          'Supply Chain Resilience Analyst',
+                          'Resource Allocation Strategist',
+                          'Digital Trade Regulator',
+                          'Circular Economy Planner',
+                          'Cooperative Systems Manager',
+                          'Public Services Operations Lead',
+                          'Future Markets Analyst',
+                          'Automated Procurement Officer',
+                          'Community Enterprise Advisor'],
+ 'Food & Agriculture': ['Vertical Farm Systems Operator',
+                        'Food Security Modeler',
+                        'Synthetic Nutrition Designer',
+                        'Soil Regeneration Scientist',
+                        'Precision Agriculture Technician',
+                        'Urban Food Network Planner',
+                        'Cultivated Protein Specialist',
+                        'Agricultural Robotics Engineer',
+                        'Seed Heritage Conservator',
+                        'Water-Efficient Crop Analyst'],
+ 'Safety & Protection': ['Cybersecurity Specialist',
+                         'Disaster Prediction Analyst',
+                         'Emergency Drone Coordinator',
+                         'Infrastructure Risk Inspector',
+                         'Digital Forensics Investigator',
+                         'Public Health Safety Officer',
+                         'Civilian Protection Planner',
+                         'Network Resilience Specialist',
+                         'Automated Rescue Technician',
+                         'Information Integrity Analyst'],
+ 'Communication & Society': ['Intercultural Mediation Officer',
+                             'Community Wellbeing Designer',
+                             'Language Preservation Specialist',
+                             'Public Information Strategist',
+                             'Accessibility Systems Designer',
+                             'Digital Journalism Analyst',
+                             'Civic Participation Facilitator',
+                             'Social Services Coordinator',
+                             'Conflict Resolution Specialist',
+                             'Communication Interface Researcher']}
+
+# Each occupation is a structured profile. The rotating specialties prevent
+# every career in a sector from sharing exactly the same matching criteria.
+SECTOR_SKILLS = {
+    "AI & Digital Systems": (0, 1, 2), "Creative & Cultural": (6, 4, 7),
+    "Climate & Ecology": (7, 2, 1), "Health & Biotechnology": (3, 2, 0),
+    "Civic Administration": (5, 4, 1), "Infrastructure & Engineering": (7, 0, 1),
+    "Space & Exploration": (2, 7, 0), "Education & Research": (2, 4, 3),
+    "Business & Logistics": (5, 1, 4), "Food & Agriculture": (2, 7, 3),
+    "Safety & Protection": (0, 7, 3), "Communication & Society": (4, 3, 6),
+}
+SUBJECT_BY_SKILL = {
+    0: "Computer Science", 1: "Mathematics", 2: "Biology and Healthcare",
+    3: "Biology and Healthcare", 4: "English and Communication",
+    5: "Business and Economics", 6: "Art and Design", 7: "Physics and Engineering",
+}
+ENV_BY_SKILL = {
+    0: "Remote or Digital Workplace", 1: "Research Laboratory", 2: "Research Laboratory",
+    3: "Hospital or Healthcare Facility", 4: "Office Environment", 5: "Office Environment",
+    6: "Creative Studio", 7: "Engineering or Industrial Facility",
+}
+PRIORITY_BY_SKILL = {
+    0: "Technological Innovation", 1: "Scientific Discovery", 2: "Scientific Discovery",
+    3: "Helping Others", 4: "Independent Decision-Making", 5: "Leadership and Influence",
+    6: "Creative Freedom", 7: "Technological Innovation",
+}
+
+for sector, names in CAREER_SECTORS.items():
+    a, b, c = SECTOR_SKILLS[sector]
+    for index, career_name in enumerate(names):
+        first = (a, b, c)[index % 3]
+        second = (b, c, a)[index % 3]
+        if first == second:
+            second = (second + 1) % len(skill_options)
+        career_profiles[career_name] = {
+            "skills": [skill_options[first], skill_options[second]],
+            "subjects": [SUBJECT_BY_SKILL[first], SUBJECT_BY_SKILL[second]],
+            "environments": [ENV_BY_SKILL[first], ENV_BY_SKILL[second]],
+            "priorities": [PRIORITY_BY_SKILL[first], PRIORITY_BY_SKILL[second]],
+            "demand": 7 + ((index * 7 + len(sector)) % 14),
+            "sector": sector,
+        }
+
+career_options = sorted(set(career_options) | set(career_profiles))
+
 # ============================================================
 # STEP 5: ALLOCATION ALGORITHM
 # ============================================================
@@ -648,7 +854,9 @@ def allocate_career(responses):
             )
 
         if responses["secondary_skill"] in profile["skills"]:
-            breakdown["Secondary Skill"] = 15
+            breakdown["Secondary Skill"] = (
+                30 if responses["secondary_skill"] == profile["skills"][1] else 22
+            )
 
         if responses["academic_subject"] in profile["subjects"]:
             breakdown["Academic Strength"] = 20
@@ -693,7 +901,7 @@ def calculate_indices(responses, allocation):
         + b["Workplace Priority"]
     )
 
-    productivity = round(matching / 90 * 100)
+    productivity = round(matching / 105 * 100)
 
     compliance_points = {
         "Always follow official instructions": 35,
@@ -2006,7 +2214,8 @@ def navigate_to(destination):
 
 
 with st.sidebar:
-    render("""
+    st.radio("DISPLAY MODE", ["Dark", "Light"], key="visual_mode", horizontal=True, help="Switch the entire portal between dark and light styling.")
+    render(f"""
 <div class="fp-side-brand">
     <div class="fp-side-emblem" aria-hidden="true">
         <svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
@@ -2021,7 +2230,7 @@ with st.sidebar:
     </div>
 </div>
 <div class="fp-side-separator"></div>
-<div class="fp-side-section">MAIN NAVIGATION <span>01 / 06</span></div>
+<div class="fp-side-section">MAIN NAVIGATION <span>{[item[0] for item in NAV_ITEMS].index(st.session_state.navigation) + 1:02d} / 06</span></div>
 """)
 
     for page_name, material_icon, widget_key in NAV_ITEMS:
@@ -2214,10 +2423,7 @@ elif selected_page == "Profile":
 elif selected_page == "Evaluation":
     st.header("MANDATORY CITIZEN EVALUATION")
 
-    st.warning(
-        "CITIZEN NOTICE: Career evaluation "
-        "is mandatory at age 18."
-    )
+    st.caption("MANDATORY AT AGE 18 · STANDARDIZED CCAA ASSESSMENT PROTOCOL")
 
     st.caption(
         "CCAA STANDARDIZED ASSESSMENT PROTOCOL // 2176"
@@ -2231,89 +2437,38 @@ elif selected_page == "Evaluation":
         )
 
     with st.form("citizen_evaluation_form"):
-        st.subheader("SECTION A — CITIZEN IDENTIFICATION")
+        identity, preferences = st.columns(2, gap="medium")
+        with identity:
+            st.markdown("**01 / CITIZEN IDENTIFICATION**")
+            name = st.text_input("Citizen name", placeholder="Enter a fictional name")
+            age = st.number_input("Citizen age", min_value=1, max_value=100, value=18, step=1)
+        with preferences:
+            st.markdown("**02 / CAREER PREFERENCE**")
+            career = st.selectbox("Preferred occupation", career_options)
+            st.caption("Preferences are advisory, not binding.")
 
-        name = st.text_input("Enter Citizen Name")
+        skills_col, work_col = st.columns(2, gap="medium")
+        with skills_col:
+            st.markdown("**03 / SKILLS & EDUCATION**")
+            skill = st.selectbox("Primary skill", skill_options)
+            secondary_skill = st.selectbox("Secondary skill", [x for x in skill_options if x != skill])
+            academic_subject = st.selectbox("Strongest academic subject", academic_subjects)
+        with work_col:
+            st.markdown("**04 / WORKPLACE PROFILE**")
+            work_environment = st.selectbox("Preferred environment", work_environments)
+            work_priority = st.selectbox("Top workplace priority", work_priorities)
+            teamwork = st.selectbox("Team arrangement", teamwork_options)
 
-        age = st.number_input(
-            "Enter Citizen Age",
-            min_value=1,
-            max_value=100,
-            value=18,
-            step=1
-        )
+        compliance_col, choice_col = st.columns(2, gap="medium")
+        with compliance_col:
+            st.markdown("**05 / INSTITUTIONAL ALIGNMENT**")
+            compliance = st.selectbox("Response to official instructions", compliance_options)
+        with choice_col:
+            st.markdown("**06 / PERSONAL AUTONOMY**")
+            individual_choice = st.selectbox("Views on career allocation", choice_options)
 
-        st.divider()
-        st.subheader("SECTION B — CAREER PREFERENCES")
-
-        career = st.selectbox(
-            "Select Your Preferred Career",
-            career_options
-        )
-
-        st.caption(
-            "Citizen preferences do not guarantee placement."
-        )
-
-        st.divider()
-        st.subheader("SECTION C — SKILLS AND EDUCATION")
-
-        skill = st.selectbox(
-            "Select Your Strongest Skill",
-            skill_options
-        )
-
-        secondary_skill = st.selectbox(
-            "Select Your Secondary Skill",
-            [s for s in skill_options if s != skill]
-        )
-
-        academic_subject = st.selectbox(
-            "Select Your Strongest Academic Subject",
-            academic_subjects
-        )
-
-        st.divider()
-        st.subheader("SECTION D — WORKPLACE PREFERENCES")
-
-        work_environment = st.selectbox(
-            "Select Your Preferred Work Environment",
-            work_environments
-        )
-
-        work_priority = st.selectbox(
-            "What Do You Value Most in a Career?",
-            work_priorities
-        )
-
-        teamwork = st.selectbox(
-            "Select Your Preferred Working Arrangement",
-            teamwork_options
-        )
-
-        st.divider()
-        st.subheader("SECTION E — INSTITUTIONAL ALIGNMENT")
-
-        compliance = st.radio(
-            "How Do You Respond to Official Instructions?",
-            compliance_options
-        )
-
-        individual_choice = st.radio(
-            "Which Statement Best Reflects Your Views "
-            "on Career Allocation?",
-            choice_options
-        )
-
-        st.divider()
-        st.warning(
-            "OFFICIAL NOTICE: Submitted responses "
-            "will be processed under CCAA protocols."
-        )
-
-        submitted = st.form_submit_button(
-            "SUBMIT FOR GOVERNMENT EVALUATION"
-        )
+        st.caption("OFFICIAL NOTICE · All submitted answers enter the simulated CCAA allocation system.")
+        submitted = st.form_submit_button("SUBMIT FOR GOVERNMENT EVALUATION", type="primary", use_container_width=True)
 
     if submitted:
         if not name.strip():
