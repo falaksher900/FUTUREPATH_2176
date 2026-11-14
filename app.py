@@ -352,12 +352,15 @@ section[data-testid="stSidebar"] .stButton button { font-size:12px; }
 .fp-gauge { background:var(--fp-panel); border:1px solid var(--fp-border); border-radius:8px; padding:18px 8px 13px; display:flex; flex-direction:column; align-items:center; gap:10px; text-align:center; }
 .fp-ring { width:102px; height:102px; border-radius:50%; display:flex; align-items:center; justify-content:center; }
 .fp-ring-inner { width:78px; height:78px; border-radius:50%; background:var(--fp-panel); display:flex; align-items:center; justify-content:center; color:var(--fp-text); font-size:20px; font-weight:800; }
-.fp-gauge-title { color:var(--fp-text); font-size:12px; font-weight:700; }
+.fp-gauge-title { color:var(--fp-text); font-size:14px; font-weight:700; }
+.fp-gauge-description { color:var(--fp-muted); font-size:12px; line-height:1.5; max-width:28ch; padding:0 8px; }
+.fp-ring-inner { font-size:24px; font-variant-numeric:tabular-nums; }
+@media (max-width:760px) { .fp-gauges {grid-template-columns:1fr;} .fp-gauge-description {max-width:42ch;} }
 .fp-bottom { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:12px; }
 .fp-status { color:var(--fp-accent); font-size:19px; font-weight:800; margin:8px 0; }
 .fp-banner { margin-top:12px; background:var(--fp-raised); border-left:4px solid var(--fp-accent); padding:12px 18px; color:var(--fp-text); font-size:12px; letter-spacing:.05em; }
 @media(max-width:950px) { .fp-dashboard {grid-template-columns:1fr;} }
-@media(max-width:600px) { .fp-gauges {gap:6px;} .fp-ring {width:79px;height:79px;} .fp-ring-inner {width:61px;height:61px;font-size:14px;} .fp-gauge {padding:12px 3px;} .fp-bottom {grid-template-columns:1fr;} .fp-name {font-size:19px;} }
+@media(max-width:600px) { .fp-gauges {gap:6px;} .fp-ring {width:79px;height:79px;} .fp-ring-inner {width:61px;height:61px;font-size:20px;} .fp-gauge {padding:12px 3px;} .fp-bottom {grid-template-columns:1fr;} .fp-name {font-size:19px;} }
 
 /* STEP 12+ : PROFESSIONAL ICON SIDEBAR */
 section[data-testid="stSidebar"] {
@@ -405,7 +408,7 @@ section[data-testid="stSidebar"] div[class*="st-key-fp_nav_"] button svg {
 }
 .fp-side-citizen { display:flex; align-items:center; gap:11px; border:1px solid var(--fp-border); background:var(--fp-panel); border-radius:8px; padding:12px 10px; margin-bottom:14px; }
 .fp-side-avatar { width:37px; height:39px; flex-shrink:0; border:1px solid var(--fp-border); border-radius:5px; background:var(--fp-raised); display:flex; align-items:center; justify-content:center; color:var(--fp-accent); font-size:22px; }
-.fp-side-avatar svg { width:28px; height:28px; }
+.fp-side-avatar { overflow:hidden; }
 .fp-side-person { min-width:0; }
 .fp-side-person-name { font-size:12px; font-weight:800; color:var(--fp-text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .fp-side-person-id { color:var(--fp-muted); font-size:9px; font-family:monospace; overflow-wrap:anywhere; margin-top:4px; }
@@ -1400,14 +1403,34 @@ def calculate_indices(responses, allocation):
             for key, ws in weights.items()}
 
 
+EVALUATION_METRICS = (
+    ("productivity_fit", "Productivity Fit", "var(--fp-accent)",
+     "Summarises how well your skills, education, and work preferences match a role. These inputs help rank possible assignments."),
+    ("social_alignment", "Social Alignment", "var(--fp-muted)",
+     "Summarises how closely your answers align with the Authority’s expectations about teamwork, rules, and personal choice."),
+    ("stability_index", "Stability Index", "var(--fp-text)",
+     "Summarises how the Authority rates your work preferences and answers about teamwork and following instructions."),
+)
+
+
 def render_evaluation_gauges(indices):
-    gauges = ""
-    for key, label in [("productivity_fit", "Productivity Fit"),
-                       ("social_alignment", "Social Alignment"),
-                       ("stability_index", "Stability Index")]:
+    cards = []
+    for key, label, color, description in EVALUATION_METRICS:
         value = indices[key]
-        gauges += f'<div class="fp-gauge"><div class="fp-ring" style="background:conic-gradient(var(--fp-accent) {value}%,var(--fp-border) {value}%);"><div class="fp-ring-inner">{value:.2f}%</div></div><div class="fp-gauge-title">{label}</div></div>'
-    render(f'<div class="fp-gauges">{gauges}</div>')
+        cards.append(f"""
+<div class="fp-gauge">
+    <div class="fp-ring" style="background:conic-gradient({color} {value}%,var(--fp-border) {value}%);">
+        <div class="fp-ring-inner" title="{value:.2f}%">{value:.0f}%</div>
+    </div>
+    <div class="fp-gauge-title">{label}</div>
+    <div class="fp-gauge-description">{description}</div>
+</div>
+""")
+    render(f'<div class="fp-gauges">{"".join(cards)}</div>')
+    st.caption(
+        "Career assignments are ranked by skills, education, workplace preferences, and workforce demand. "
+        "The three percentages summarise your evaluation. Appeal outcomes follow a separate review process."
+    )
 
 
 # ============================================================
@@ -1670,38 +1693,8 @@ def display_assignment(citizen):
 # ============================================================
 
 def display_gauges(citizen):
-    metrics = [
-        ("Productivity Fit", citizen["productivity_fit"],
-         "#b095f2", "Skills and academic matching"),
-        ("Social Alignment", citizen["social_alignment"],
-         "#8c9fad", "Institutional conformity index"),
-        ("Stability Index", citizen["stability_index"],
-         "#c0d3e2", "Workforce stability assessment")
-    ]
-
-    items = ""
-
-    for label, value, color, description in metrics:
-        items += f"""
-<div class="gauge-item">
-    <div class="gauge-ring"
-         style="background:conic-gradient(
-             {color} {value}%,
-             #435565 {value}%
-         );">
-        <div class="gauge-inner">{value:.2f}%</div>
-    </div>
-    <div class="gauge-label">{label}</div>
-    <div class="gauge-description">{description}</div>
-</div>
-"""
-
-    render(f"""
-<div class="gov-panel">
-    <div class="gov-label">EVALUATION SUMMARY</div>
-    <div class="gauge-grid">{items}</div>
-</div>
-""")
+    st.markdown("**EVALUATION SUMMARY**")
+    render_evaluation_gauges(citizen)
 
 
 def display_allocation_details(citizen):
@@ -2589,21 +2582,7 @@ def display_compact_dashboard(citizen):
     </div>
 </div>
 """)
-    metrics = [
-        ("Productivity Fit", citizen["productivity_fit"], "#b095f2"),
-        ("Social Alignment", citizen["social_alignment"], "#8c9fad"),
-        ("Stability Index", citizen["stability_index"], "#c0d3e2"),
-    ]
-    gauges = ""
-    for label, value, color in metrics:
-        gauges += f"""
-<div class="fp-gauge">
-    <div class="fp-ring" style="background:conic-gradient({color} {value}%,#435565 {value}%);">
-        <div class="fp-ring-inner">{value:.2f}%</div>
-    </div>
-    <div class="fp-gauge-title">{safe(label)}</div>
-</div>"""
-    render(f'<div class="fp-gauges">{gauges}</div>')
+    render_evaluation_gauges(citizen)
     render(f"""
 <div class="fp-bottom">
     <div class="fp-tile">
@@ -2695,8 +2674,7 @@ with st.sidebar:
         render(f"""
 <div class="fp-side-citizen">
     <div class="fp-side-avatar" aria-hidden="true">
-        <svg viewBox="0 0 32 32"><circle cx="16" cy="11" r="6" fill="#b5c4d3"/>
-        <path d="M4 30c0-10 24-10 24 0" fill="#b5c4d3"/></svg>
+        {profile_portrait()}
     </div>
     <div class="fp-side-person">
         <div class="fp-side-person-name">{safe(sidebar_citizen['name'])}</div>
