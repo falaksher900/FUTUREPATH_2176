@@ -537,7 +537,12 @@ work_environments = [
     "Engineering or Industrial Facility",
     "Outdoor or Field Environment",
     "Educational Institution",
-    "Remote or Digital Workplace"
+    "Remote or Digital Workplace",
+    "Commercial Kitchen",
+    "Construction Site",
+    "Retail or Customer Service",
+    "Warehouse or Distribution Hub",
+    "Workshop or Repair Depot",
 ]
 
 work_priorities = [
@@ -658,7 +663,7 @@ career_profiles = {
 }
 
 
-# EXTENDED CAREER CATALOG — 120 unique assignments across 12 sectors.
+# Original extended career catalog and matching specialties.
 CAREER_SECTORS = {'AI & Digital Systems': ['AI Ethics Auditor',
                           'Neural Interface Designer',
                           'Machine Cognition Trainer',
@@ -822,7 +827,159 @@ for sector, names in CAREER_SECTORS.items():
             "sector": sector,
         }
 
+# Broad CCAA reporting sectors. The original specialties still define scoring.
+SECTOR_GROUPS = {
+    "AI & Digital Systems": "Technology & Digital Systems",
+    "Creative & Cultural": "Arts, Media & Communications",
+    "Climate & Ecology": "Environment & Utilities",
+    "Health & Biotechnology": "Healthcare & Biotechnology",
+    "Civic Administration": "Public Services & Safety",
+    "Infrastructure & Engineering": "Engineering & Transport",
+    "Space & Exploration": "Engineering & Transport",
+    "Education & Research": "Education & Research",
+    "Business & Logistics": "Business, Retail & Logistics",
+    "Food & Agriculture": "Food, Agriculture & Hospitality",
+    "Safety & Protection": "Public Services & Safety",
+    "Communication & Society": "Arts, Media & Communications",
+}
+
+SECTOR_WORK = {
+    "Technology & Digital Systems": ("Digital Systems Directorate", "test system outputs, document faults, and support reliable digital services"),
+    "Arts, Media & Communications": ("Civic Media and Culture Office", "develop public-facing materials, review them with subject specialists, and maintain production records"),
+    "Environment & Utilities": ("Environmental Operations Directorate", "monitor field conditions, record changes, and coordinate restoration or utility work"),
+    "Healthcare & Biotechnology": ("Regional Health and Biotech Network", "coordinate services with clinical or laboratory teams, check records, and follow safety protocols"),
+    "Public Services & Safety": ("Regional Civic Services Office", "review case information, coordinate with frontline teams, and document official decisions"),
+    "Engineering & Transport": ("Infrastructure and Transport Authority", "review technical requirements, inspect system performance, and coordinate maintenance or delivery"),
+    "Education & Research": ("Public Learning and Research Network", "prepare learning or research materials, review findings, and document outcomes"),
+    "Business, Retail & Logistics": ("Regional Commerce and Distribution Office", "keep operational records, coordinate supplies or customer requests, and resolve delivery issues"),
+    "Food, Agriculture & Hospitality": ("Regional Food and Hospitality Network", "check stock and quality, document production, and coordinate daily services"),
+    "Construction & Skilled Trades": ("Civic Works and Maintenance Department", "read work orders, inspect materials, and carry out or verify site repairs"),
+}
+
+for job in career_profiles.values():
+    job["sector"] = SECTOR_GROUPS.get(job.get("sector"), "Healthcare & Biotechnology")
+
+for title in ("Synthetic Habitat Architect", "Autonomous Construction Supervisor",
+              "Subsurface Habitat Technician", "Disaster Shelter Planner"):
+    career_profiles[title]["sector"] = "Construction & Skilled Trades"
+career_profiles["Cybersecurity Specialist"]["sector"] = "Technology & Digital Systems"
+
+# title, sector, primary/secondary skill indexes, workplace, priority, duties, posting
+PRACTICAL_CAREERS = [
+    ("Cook", "Food, Agriculture & Hospitality", (6, 3), "Commercial Kitchen", "Helping Others",
+     "Prepare meals from standard menus, manage ingredients and allergens, and check food temperatures during service.", "District public canteen kitchen"),
+    ("Baker", "Food, Agriculture & Hospitality", (6, 2), "Commercial Kitchen", "Creative Freedom",
+     "Scale dough batches, run ovens, and check the quality of bread and pastries before dispatch.", "Municipal bakery and distribution kitchen"),
+    ("Catering Assistant", "Food, Agriculture & Hospitality", (3, 4), "Commercial Kitchen", "Job Security",
+     "Set up serving stations, portion and label meals, and clean equipment between shifts.", "District school meal service"),
+    ("Cleaner", "Public Services & Safety", (3, 7), "Workshop or Repair Depot", "Job Security",
+     "Clean shared facilities, replenish supplies, and report spills, damage, or broken equipment.", "Public facilities maintenance depot"),
+    ("Care Assistant", "Healthcare & Biotechnology", (3, 4), "Hospital or Healthcare Facility", "Helping Others",
+     "Help residents with meals and daily routines, record observations, and report concerns to the care team.", "Residential care centre"),
+    ("Teaching Assistant", "Education & Research", (4, 3), "Educational Institution", "Helping Others",
+     "Prepare classroom materials, support small-group activities, and share pupil progress notes with teachers.", "District public school"),
+    ("Electrician", "Construction & Skilled Trades", (7, 0), "Construction Site", "Technological Innovation",
+     "Install wiring, test circuits, and record inspection results before equipment is put into service.", "Civic Works building project sites"),
+    ("Plumber", "Construction & Skilled Trades", (7, 3), "Construction Site", "Job Security",
+     "Install pipework, trace leaks, and pressure-test water and drainage systems after repairs.", "Municipal housing repair crews"),
+    ("Carpenter", "Construction & Skilled Trades", (7, 6), "Construction Site", "Creative Freedom",
+     "Measure, cut, and assemble timber fittings and frames from approved site plans.", "Public housing construction sites"),
+    ("Construction Labourer", "Construction & Skilled Trades", (7, 4), "Construction Site", "Financial Stability",
+     "Prepare work areas, move supplies, assist trades crews, and keep access routes clear.", "District redevelopment project sites"),
+    ("Building Maintenance Worker", "Construction & Skilled Trades", (7, 5), "Workshop or Repair Depot", "Independent Decision-Making",
+     "Inspect fixtures, carry out routine repairs, and refer specialist faults to the appropriate trade team.", "Municipal property maintenance depot"),
+    ("Mechanic", "Engineering & Transport", (7, 0), "Workshop or Repair Depot", "Technological Innovation",
+     "Diagnose mechanical faults, replace worn components, and test vehicles before releasing them.", "Public fleet service garage"),
+    ("Warehouse Operative", "Business, Retail & Logistics", (5, 7), "Warehouse or Distribution Hub", "Job Security",
+     "Receive goods, scan inventory, pick orders, and prepare consignments for dispatch.", "Regional distribution hub"),
+    ("Delivery Driver", "Business, Retail & Logistics", (7, 5), "Warehouse or Distribution Hub", "Independent Decision-Making",
+     "Check loads, follow delivery routes, and record each handover or missed delivery.", "Regional delivery depot and assigned routes"),
+    ("Retail Assistant", "Business, Retail & Logistics", (4, 5), "Retail or Customer Service", "Helping Others",
+     "Help customers find goods, restock shelves, and complete transactions and returns.", "District supply store"),
+    ("Groundskeeper", "Environment & Utilities", (7, 2), "Outdoor or Field Environment", "Helping Others",
+     "Maintain paths and planting, inspect public green spaces, and report hazards or irrigation faults.", "City parks and public gardens"),
+]
+for title, sector, skills, workplace, priority, duties, posting in PRACTICAL_CAREERS:
+    primary, secondary = skills
+    career_profiles[title] = {
+        "sector": sector,
+        "skills": [skill_options[primary], skill_options[secondary]],
+        "subjects": [SUBJECT_BY_SKILL[primary], SUBJECT_BY_SKILL[secondary]],
+        "environments": [workplace],
+        "priorities": [priority],
+        "demand": 19,
+        "duties": duties,
+        "posting": posting,
+    }
+
 career_options = sorted(set(career_options) | set(career_profiles))
+
+RETIREMENT_MIN = 65
+RETIREMENT_MAX = 75
+RETIREMENT_DEFAULT = 67
+
+CITIZEN_RECORD_FIELDS = (
+    ("disability", "Disability"),
+    ("height_cm", "Height (cm)"),
+    ("weight_kg", "Weight (kg)"),
+    ("race", "Race"),
+    ("ethnicity", "Ethnicity"),
+    ("nationality", "Nationality"),
+    ("retirement_age", "Planned retirement age"),
+)
+
+
+def career_posting(citizen):
+    title = citizen["assigned_career"]
+    profile = career_profiles[title]
+    sector = profile["sector"]
+    agency, sector_duties = SECTOR_WORK[sector]
+    duties = profile.get("duties", f"As a {title.lower()}, you will {sector_duties}.")
+    posting = profile.get("posting", f"{agency} · {profile['environments'][0]}")
+    return sector, duties, posting
+
+
+def display_career_posting(citizen):
+    sector, duties, posting = career_posting(citizen)
+    st.write("**Assigned sector:**", sector)
+    st.write("**What you’ll do:**", duties)
+    st.write("**Where you’ll work:**", posting)
+    if citizen.get("retirement_age") is not None:
+        st.write("**Service ends at age:**", citizen["retirement_age"])
+
+
+# Embedded grayscale placeholder portrait, shared by the citizen card and dashboard.
+PROFILE_PORTRAIT = """
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120" width="100" height="120">
+  <defs>
+    <linearGradient id="back" x2="1" y2="1">
+      <stop stop-color="#e3e3e3"/><stop offset="1" stop-color="#8d8d8d"/>
+    </linearGradient>
+    <linearGradient id="face">
+      <stop stop-color="#bdbdbd"/><stop offset="1" stop-color="#929292"/>
+    </linearGradient>
+  </defs>
+  <rect width="100" height="120" fill="url(#back)"/>
+  <path d="M4 120 Q5 96 22 91 L39 83 H61 L79 91 Q96 96 97 120Z" fill="#464646"/>
+  <path d="M39 72 H61 V91 L50 101 39 91Z" fill="#a0a0a0"/>
+  <path d="M27 47 Q25 38 30 31 Q34 18 52 19 Q72 20 74 40 L70 62
+           Q65 81 51 83 Q36 82 30 64Z" fill="url(#face)"/>
+  <path d="M28 51 Q22 40 26 30 Q31 17 50 16 Q70 16 76 31 L74 49 L69 49
+           L67 36 Q48 41 36 32 L31 50Z" fill="#484848"/>
+  <path d="M37 53 H45 M56 53 H64 M48 65 L53 65 M44 73 Q50 76 57 73"
+        stroke="#676767" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M39 88 L50 100 43 110 34 91 M61 88 L50 100 57 110 66 91"
+        fill="#d0d0d0"/>
+</svg>
+"""
+
+
+def profile_portrait():
+    encoded = base64.b64encode(PROFILE_PORTRAIT.encode("utf-8")).decode("ascii")
+    return (f'<img src="data:image/svg+xml;base64,{encoded}" '
+            'alt="Generic grayscale profile portrait" '
+            'style="display:block;width:100%;height:100%;object-fit:cover;" />')
+
 
 # ============================================================
 # STEP 5: ALLOCATION ALGORITHM
@@ -1172,11 +1329,7 @@ def display_citizen_card(citizen):
     render(f"""
 <div class="citizen-card">
     <div class="citizen-avatar">
-        <svg viewBox="0 0 100 110"
-             xmlns="http://www.w3.org/2000/svg">
-            <circle cx="50" cy="32" r="24"/>
-            <path d="M8 108 C8 62 92 62 92 108 Z"/>
-        </svg>
+        {profile_portrait()}
     </div>
     <div>
         <div class="gov-label">OFFICIAL CITIZEN IDENTIFICATION</div>
@@ -1935,23 +2088,6 @@ history_events = [
 ]
 
 
-def display_narrative_progress(citizen=None):
-    """Show the visitor's story milestones without altering the original workflow."""
-    completed = [
-        ("Complete mandatory evaluation", citizen is not None),
-        ("Respond on Assignment Day", bool(citizen and citizen.get("assignment_decision"))),
-        ("Submit a restricted appeal", bool(citizen and citizen.get("appeal"))),
-        ("Read Aurora's testimony", st.session_state.aurora_story_read),
-        ("Recover the resistance fragment", st.session_state.resistance_discovered),
-        ("Recover the suppressed history", st.session_state.history_discovered),
-    ]
-    count = sum(done for _, done in completed)
-    st.subheader("NARRATIVE PROGRESS // CITIZEN RECORD")
-    st.progress(count / len(completed), text=f"{count} OF {len(completed)} RECORDS DISCOVERED")
-    for label, done in completed:
-        st.caption(("✓ " if done else "○ ") + label)
-
-
 def display_historical_timeline():
     st.subheader("150 YEARS OF ALIGNED FUTURES // 2026–2176")
     st.caption("CCAA APPROVED HISTORICAL RECORD · FICTIONAL ARCHIVE")
@@ -1965,9 +2101,7 @@ def display_historical_timeline():
 """)
         if st.session_state.history_discovered:
             st.caption("RECOVERED CITIZEN RECORD: " + hidden)
-    if not st.session_state.history_discovered:
-        st.info("Additional historical testimony is sealed. Recover the REMEMBER archive fragment in Citizen Information Channel to reveal it.")
-    else:
+    if st.session_state.history_discovered:
         st.warning("SUPPRESSED HISTORY RESTORED: The official chronology omits the gradual removal of personal choice.")
 
 
@@ -2037,7 +2171,7 @@ def create_aurora_demo_record():
         "compliance": "Question instructions when necessary",
         "individual_choice": "Personal ambition should come first",
     }
-    responses.update(preferred_career="Artist", age=18)
+    responses.update(preferred_career="Artist", age=18, retirement_age=RETIREMENT_DEFAULT)
     allocation = allocate_career(responses)
     indices = calculate_indices(responses, allocation)
     return {
@@ -2123,7 +2257,7 @@ def display_presentation_guide():
 
 def display_compact_dashboard(citizen):
     """Wireframe-style overview; all detailed reports live on their own pages."""
-    avatar = """<svg viewBox="0 0 100 110" aria-hidden="true"><circle cx="50" cy="32" r="24"/><path d="M8 108 C8 62 92 62 92 108 Z"/></svg>"""
+    avatar = profile_portrait()
     decision = citizen.get("assignment_decision")
     compliance = citizen.get("compliance_status") or "AWAITING RESPONSE"
     appeal = citizen.get("appeal")
@@ -2176,8 +2310,7 @@ def display_compact_dashboard(citizen):
 </div>
 <div class="fp-banner">A STABLE SOCIETY IS BUILT ON ALIGNED FUTURES.</div>
 """)
-    with st.expander("MORE DETAILS · REPORTS, DOCUMENTS & STORY PROGRESS", expanded=False):
-        display_narrative_progress(citizen)
+    with st.expander("MORE DETAILS · REPORTS & DOCUMENTS", expanded=False):
         display_allocation_details(citizen)
         display_documents(citizen)
 
@@ -2300,9 +2433,6 @@ with st.sidebar:
         if st.session_state.demo_mode:
             st.caption("DEMONSTRATION RECORD ACTIVE // FICTIONAL")
 
-    if st.session_state.resistance_discovered or st.session_state.history_discovered:
-        render('<div class="fp-side-anomaly">◈ ARCHIVE ANOMALY DETECTED</div>')
-
     render("""
 <div class="fp-side-footer">
     <div>FUTUREPATH 2176 · CENTRAL CAREER ALLOCATION AUTHORITY</div>
@@ -2350,8 +2480,6 @@ if selected_page == "Dashboard":
         st.info("Select Evaluation in the sidebar to register. For a quick demo, open Presentation Tools in the sidebar.")
     else:
         display_compact_dashboard(st.session_state.citizen)
-        if st.session_state.resistance_discovered or st.session_state.history_discovered:
-            st.caption("ARCHIVE ANOMALY DETECTED · Open Resources to investigate.")
 
 # ============================================================
 # PROFILE
@@ -2374,10 +2502,6 @@ elif selected_page == "Profile":
 
         left, right = st.columns(2, gap="medium")
 
-        with left:
-            with st.expander(":material/route:  NARRATIVE PROGRESS", expanded=False):
-                display_narrative_progress(citizen)
-
         with right:
             with st.expander(":material/id_card:  PERSONAL INFORMATION", expanded=False):
                 st.write("**Citizen Name:**", citizen["name"])
@@ -2386,11 +2510,15 @@ elif selected_page == "Profile":
                 st.write("**Cohort:**", citizen["cohort"])
                 st.write("**Verification:**", citizen["verification"])
                 st.write("**Registration Date:**", citizen["registration_date"])
+                for field, label in CITIZEN_RECORD_FIELDS:
+                    value = citizen.get(field)
+                    st.write(f"**{label}:**", value if value not in (None, "") else "Not recorded")
 
         with left:
             with st.expander(":material/work:  CAREER RECORD", expanded=False):
                 st.write("**Preferred Career:**", citizen["preferred_career"])
                 st.write("**Assigned Career:**", citizen["assigned_career"])
+                display_career_posting(citizen)
                 st.write("**Assignment Status:**", citizen["assignment_status"])
 
         with right:
@@ -2447,6 +2575,27 @@ elif selected_page == "Evaluation":
             career = st.selectbox("Preferred occupation", career_options)
             st.caption("Preferences are advisory, not binding.")
 
+        with st.expander("OPTIONAL CITIZEN RECORD DETAILS"):
+            st.caption("Use fictional details. These fields are recorded for the citizen profile.")
+            physical, background = st.columns(2, gap="medium")
+            with physical:
+                disability = st.selectbox("Does the fictional citizen have a disability?",
+                                          ["Prefer not to say", "Yes", "No"])
+                height_cm = st.number_input("Height (cm)", min_value=50.0, max_value=260.0,
+                                            value=None, step=1.0)
+                weight_kg = st.number_input("Weight (kg)", min_value=10.0, max_value=500.0,
+                                            value=None, step=0.5)
+            with background:
+                race = st.text_input("Race", max_chars=100)
+                ethnicity = st.text_input("Ethnicity", max_chars=100)
+                nationality = st.text_input("Nationality", max_chars=100)
+
+        retirement_age = st.number_input(
+            "Planned retirement age", min_value=RETIREMENT_MIN, max_value=RETIREMENT_MAX,
+            value=RETIREMENT_DEFAULT, step=1,
+            help="CCAA retirement window: 65–75. New assignments end at the selected retirement age.",
+        )
+
         skills_col, work_col = st.columns(2, gap="medium")
         with skills_col:
             st.markdown("**03 / SKILLS & EDUCATION**")
@@ -2467,7 +2616,7 @@ elif selected_page == "Evaluation":
             st.markdown("**06 / PERSONAL AUTONOMY**")
             individual_choice = st.selectbox("Views on career allocation", choice_options)
 
-        st.caption("OFFICIAL NOTICE · All submitted answers enter the simulated CCAA allocation system.")
+        st.caption("OFFICIAL NOTICE · Skills and work answers feed the simulated allocation. Retirement age determines eligibility for a new placement.")
         submitted = st.button("SUBMIT FOR GOVERNMENT EVALUATION", key="submit_evaluation", type="primary", use_container_width=True)
 
     # Widgets rerun immediately; the official citizen record changes on submit.
@@ -2481,7 +2630,7 @@ elif selected_page == "Evaluation":
     preview_allocation = allocate_career(responses)
     preview_indices = calculate_indices(responses, preview_allocation)
     st.markdown("**LIVE EVALUATION INDICES**")
-    st.caption("Updates with each assessment selection and age change. Name identifies the record. These are fictional CCAA simulation scores. Submit to save this evaluation.")
+    st.caption("Fictional CCAA scores update as you change skills, career preferences, work answers, or age. Submit to save the evaluation.")
     render_evaluation_gauges(preview_indices)
 
     if submitted:
@@ -2495,6 +2644,10 @@ elif selected_page == "Evaluation":
                 "career allocation age of 18."
             )
 
+        elif age >= retirement_age:
+            st.error("EVALUATION ACCESS DENIED")
+            st.warning("The citizen has reached their planned retirement age. New placements are available before that age.")
+
         else:
             allocation = preview_allocation
             indices = preview_indices
@@ -2506,8 +2659,14 @@ elif selected_page == "Evaluation":
                 "cohort": "2176-A",
                 "verification": "VERIFIED",
                 "registration_date": timestamp(),
-                "preferred_career": career,
                 **responses,
+                "disability": disability,
+                "height_cm": height_cm,
+                "weight_kg": weight_kg,
+                "race": race.strip(),
+                "ethnicity": ethnicity.strip(),
+                "nationality": nationality.strip(),
+                "retirement_age": int(retirement_age),
                 "assigned_career": allocation["assigned_career"],
                 "assignment_status": "PERMANENT",
                 "allocation_score": allocation["allocation_score"],
@@ -2535,6 +2694,7 @@ elif selected_page == "Evaluation":
     <div class="gov-small">A government-issued career designation has been recorded.</div>
 </div>
 """)
+            display_career_posting(citizen)
             if citizen["assigned_career"] != citizen["preferred_career"]:
                 st.warning("CITIZEN PREFERENCE OVERRIDDEN // Government labor priorities take precedence.")
             st.caption("Your detailed evaluation, scores, and documents are available in Profile.")
@@ -2564,6 +2724,7 @@ elif selected_page == "Assignment":
         citizen = st.session_state.citizen
 
         st.caption("NATIONAL ASSIGNMENT DAY // OFFICIAL CITIZEN RESPONSE")
+        display_career_posting(citizen)
         display_assignment_day(citizen)
 
         # Assignment Day is for a decision, not another evaluation report.
@@ -2720,11 +2881,8 @@ elif selected_page == "Resources":
         [
             "Government Policies",
             "Public Announcements",
-            "Restricted Archive",
             "Historical Timeline",
             "Aurora's Story",
-            "Citizen Information Channel",
-            "Presentation Guide"
         ],
         horizontal=True,
         key="resource_tab"
@@ -2738,33 +2896,12 @@ elif selected_page == "Resources":
     elif resource_tab == "Public Announcements":
         display_propaganda()
 
-    elif resource_tab == "Restricted Archive":
-        display_classified_archive()
-
     elif resource_tab == "Historical Timeline":
         display_historical_timeline()
 
     elif resource_tab == "Aurora's Story":
         display_aurora_story()
 
-    elif resource_tab == "Presentation Guide":
-        display_presentation_guide()
-
-    elif resource_tab == "Citizen Information Channel":
-        display_resistance()
-        st.divider()
-        st.subheader("SECONDARY ARCHIVE RECOVERY")
-        st.caption("Recovery key hint: what must a society do with its history? REMEMBER.")
-        history_key = st.text_input("Historical Recovery Key", key="history_recovery_key")
-        if st.button("RECOVER SUPPRESSED HISTORY", key="recover_history_button"):
-            if history_key.strip().upper() == "REMEMBER":
-                st.session_state.history_discovered = True
-                st.rerun()
-            else:
-                st.error("HISTORICAL ARCHIVE FRAGMENT NOT FOUND")
-        if st.session_state.history_discovered:
-            st.success("SUPPRESSED HISTORY RECOVERED. Return to Historical Timeline.")
-        display_final_reveal()
 
 # ============================================================
 # END OF FUTUREPATH 2176 — GLOBAL FOOTER MOVED TO SIDEBAR
