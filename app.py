@@ -6,6 +6,10 @@ import json
 import base64
 import re
 from datetime import datetime
+from io import BytesIO
+
+import pycountry
+from PIL import Image, ImageOps
 
 # ============================================================
 # FUTUREPATH 2176
@@ -920,6 +924,7 @@ RETIREMENT_DEFAULT = 67
 
 CITIZEN_RECORD_FIELDS = (
     ("disability", "Disability"),
+    ("sex_at_birth", "Sex assigned at birth"),
     ("height_cm", "Height (cm)"),
     ("weight_kg", "Weight (kg)"),
     ("race", "Race"),
@@ -927,6 +932,34 @@ CITIZEN_RECORD_FIELDS = (
     ("nationality", "Nationality"),
     ("retirement_age", "Planned retirement age"),
 )
+
+RACE_OPTIONS = (
+    "Asian", "Black or African descent", "Indigenous or First Peoples",
+    "Middle Eastern or North African", "Native Hawaiian or Pacific Islander",
+    "White", "Mixed or multiracial", "Self-describe", "Prefer not to say",
+)
+ETHNICITY_OPTIONS = (
+    "Central Asian", "East Asian", "South Asian", "Southeast Asian",
+    "West Asian or Middle Eastern", "North African", "Sub-Saharan African",
+    "Caribbean", "European", "Hispanic or Latin American",
+    "Indigenous or First Peoples", "Pacific Islander", "Mixed heritage",
+    "Self-describe", "Prefer not to say",
+)
+NATIONALITY_OPTIONS = sorted({
+    getattr(country, "common_name", country.name) for country in pycountry.countries
+}) + ["Stateless", "Self-describe", "Prefer not to say"]
+
+
+def optional_identity(label, options, help_text=None):
+    selected = st.multiselect(label, options, help=help_text)
+    if "Prefer not to say" in selected:
+        return "Prefer not to say"
+    values = [value for value in selected if value != "Self-describe"]
+    if "Self-describe" in selected:
+        description = st.text_input(f"Describe {label.lower()}", max_chars=100).strip()
+        if description:
+            values.append(description)
+    return ", ".join(values)
 
 
 def career_posting(citizen):
@@ -948,37 +981,60 @@ def display_career_posting(citizen):
         st.write("**Service ends at age:**", citizen["retirement_age"])
 
 
-# Embedded grayscale placeholder portrait, shared by the citizen card and dashboard.
+# Neutral silhouette shared by the citizen card and dashboard.
 PROFILE_PORTRAIT = """
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120" width="100" height="120">
-  <defs>
-    <linearGradient id="back" x2="1" y2="1">
-      <stop stop-color="#e3e3e3"/><stop offset="1" stop-color="#8d8d8d"/>
-    </linearGradient>
-    <linearGradient id="face">
-      <stop stop-color="#bdbdbd"/><stop offset="1" stop-color="#929292"/>
-    </linearGradient>
-  </defs>
-  <rect width="100" height="120" fill="url(#back)"/>
-  <path d="M4 120 Q5 96 22 91 L39 83 H61 L79 91 Q96 96 97 120Z" fill="#464646"/>
-  <path d="M39 72 H61 V91 L50 101 39 91Z" fill="#a0a0a0"/>
-  <path d="M27 47 Q25 38 30 31 Q34 18 52 19 Q72 20 74 40 L70 62
-           Q65 81 51 83 Q36 82 30 64Z" fill="url(#face)"/>
-  <path d="M28 51 Q22 40 26 30 Q31 17 50 16 Q70 16 76 31 L74 49 L69 49
-           L67 36 Q48 41 36 32 L31 50Z" fill="#484848"/>
-  <path d="M37 53 H45 M56 53 H64 M48 65 L53 65 M44 73 Q50 76 57 73"
-        stroke="#676767" stroke-width="2" fill="none" stroke-linecap="round"/>
-  <path d="M39 88 L50 100 43 110 34 91 M61 88 L50 100 57 110 66 91"
-        fill="#d0d0d0"/>
+  <rect width="100" height="120" fill="#d9d9d9"/>
+  <circle cx="50" cy="41" r="19" fill="#626262"/>
+  <path d="M17 103v-7a33 28 0 0 1 66 0v7Z" fill="#626262"/>
 </svg>
 """
 
 
 def profile_portrait():
-    encoded = base64.b64encode(PROFILE_PORTRAIT.encode("utf-8")).decode("ascii")
-    return (f'<img src="data:image/svg+xml;base64,{encoded}" '
-            'alt="Generic grayscale profile portrait" '
+    photo = st.session_state.get("citizen_photo")
+    if photo:
+        encoded = base64.b64encode(photo).decode("ascii")
+        mime, alt = "image/jpeg", "Citizen profile photo"
+    else:
+        encoded = base64.b64encode(PROFILE_PORTRAIT.encode("utf-8")).decode("ascii")
+        mime, alt = "image/svg+xml", "Generic grayscale profile portrait"
+    return (f'<img src="data:{mime};base64,{encoded}" alt="{alt}" '
             'style="display:block;width:100%;height:100%;object-fit:cover;" />')
+
+
+def prepare_profile_photo(upload):
+    if len(upload) > 5 * 1024 * 1024:
+        raise ValueError("Choose an image of 5 MB or less.")
+    try:
+        with Image.open(BytesIO(upload), formats=["JPEG", "PNG", "WEBP"]) as original:
+            if original.width * original.height > 20_000_000:
+                raise ValueError("Choose an image smaller than 20 megapixels.")
+            image = ImageOps.exif_transpose(original).convert("RGB")
+            image = ImageOps.fit(image, (400, 480))
+            output = BytesIO()
+            image.save(output, format="JPEG", quality=88)
+            return output.getvalue()
+    except (OSError, Image.DecompressionBombError) as exc:
+        raise ValueError("Choose a readable JPG, PNG, or WebP image.") from exc
+
+
+def profile_photo_controls(citizen):
+    with st.expander("CHANGE PROFILE PHOTO"):
+        st.caption("JPG, PNG, or WebP · up to 5 MB · current session only")
+        upload = st.file_uploader("Choose a profile photo", type=["jpg", "jpeg", "png", "webp"],
+                                  key=f"citizen_photo_upload_{citizen['citizen_id']}")
+        save, remove = st.columns(2)
+        if save.button("Use this photo", disabled=upload is None):
+            try:
+                st.session_state.citizen_photo = prepare_profile_photo(upload.getvalue())
+            except ValueError as exc:
+                st.error(str(exc))
+            else:
+                st.rerun()
+        if remove.button("Restore default avatar", disabled=not st.session_state.get("citizen_photo")):
+            st.session_state.pop("citizen_photo", None)
+            st.rerun()
 
 
 # ============================================================
@@ -2195,6 +2251,7 @@ def create_aurora_demo_record():
 
 
 def load_demo():
+    st.session_state.pop("citizen_photo", None)
     st.session_state.citizen = create_aurora_demo_record()
     st.session_state.resistance_discovered = False
     st.session_state.classified_access = False
@@ -2205,6 +2262,7 @@ def load_demo():
 
 
 def reset_experience():
+    st.session_state.pop("citizen_photo", None)
     st.session_state.citizen = None
     st.session_state.resistance_discovered = False
     st.session_state.classified_access = False
@@ -2498,6 +2556,7 @@ elif selected_page == "Profile":
 
         # Keep the official identity card visible; all detailed records are optional.
         display_citizen_card(citizen)
+        profile_photo_controls(citizen)
         st.caption("PERSONNEL RECORD DIRECTORY // SELECT A SECTION TO EXPAND OR COLLAPSE")
 
         left, right = st.columns(2, gap="medium")
@@ -2586,9 +2645,16 @@ elif selected_page == "Evaluation":
                 weight_kg = st.number_input("Weight (kg)", min_value=10.0, max_value=500.0,
                                             value=None, step=0.5)
             with background:
-                race = st.text_input("Race", max_chars=100)
-                ethnicity = st.text_input("Ethnicity", max_chars=100)
-                nationality = st.text_input("Nationality", max_chars=100)
+                sex_at_birth = st.selectbox(
+                    "Sex assigned at birth",
+                    ["Prefer not to say", "Female", "Male", "Another designation", "Unknown"],
+                )
+                race = optional_identity("Race", RACE_OPTIONS)
+                ethnicity = optional_identity("Ethnicity", ETHNICITY_OPTIONS)
+                nationality = optional_identity(
+                    "Nationality", NATIONALITY_OPTIONS,
+                    "Select the country or territory of citizenship. You can select more than one.",
+                )
 
         retirement_age = st.number_input(
             "Planned retirement age", min_value=RETIREMENT_MIN, max_value=RETIREMENT_MAX,
@@ -2652,6 +2718,7 @@ elif selected_page == "Evaluation":
             allocation = preview_allocation
             indices = preview_indices
 
+            st.session_state.pop("citizen_photo", None)
             st.session_state.citizen = {
                 "name": name.strip(),
                 "age": int(age),
@@ -2661,11 +2728,12 @@ elif selected_page == "Evaluation":
                 "registration_date": timestamp(),
                 **responses,
                 "disability": disability,
+                "sex_at_birth": sex_at_birth,
                 "height_cm": height_cm,
                 "weight_kg": weight_kg,
-                "race": race.strip(),
-                "ethnicity": ethnicity.strip(),
-                "nationality": nationality.strip(),
+                "race": race,
+                "ethnicity": ethnicity,
+                "nationality": nationality,
                 "retirement_age": int(retirement_age),
                 "assigned_career": allocation["assigned_career"],
                 "assignment_status": "PERMANENT",
